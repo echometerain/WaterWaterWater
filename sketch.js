@@ -93,8 +93,8 @@ class Straight extends Widget {
 
     let centerY = posY * widgetSize + widgetSize / 2;
     let centerX = posX * widgetSize + widgetSize / 2;
-    for (let i = 0; i < widgetSize; i++) {
-      for (let j = 0; j < widgetSize; j++) {
+    for (let i = 0; i <= widgetSize; i++) {
+      for (let j = 0; j <= widgetSize; j++) {
         let y = posY * widgetSize + i;
         let x = posX * widgetSize + j;
         if (j > inner && j < outer) {
@@ -141,6 +141,14 @@ let calcWave = (i, j) => {
 function setup() {
   background(220);
   pixelDensity(1);
+  document.oncontextmenu = function () {
+    return false;
+  };
+  // Add event listener for right-click
+  canvas.addEventListener("contextmenu", (event) => {
+    event.preventDefault();
+    handleMouseClick(event);
+  });
   // Base Arrays
   for (let i = 0; i < canvasSize; i++) {
     pointsArray[NOW][i] = new Array(canvasSize);
@@ -168,18 +176,28 @@ function setup() {
   // console.log(widgetGrid[0][0]);
 }
 
-function mouseClicked() {
-  if (mouseX >= canvasSize || mouseY >= canvasSize) {
+function handleMouseClick(event) {
+  if (event.clientX >= canvasSize || event.clientY >= canvasSize) {
     return;
   }
-  let x = Math.floor(mouseX / widgetSize);
-  let y = Math.floor(mouseY / widgetSize);
+  let x = Math.floor(event.clientX / widgetSize);
+  let y = Math.floor(event.clientY / widgetSize);
   if (widgetGrid[y][x] == undefined) {
     return;
   }
   let cwRot = widgetGrid[y][x].cwRot;
   widgetGrid[y][x].destructor();
-  widgetGrid[y][x] = new Bend(y, x, (cwRot + 1) % 4);
+  if (event.button === 0) {
+    // Left click
+    widgetGrid[y][x] = new Bend(y, x, (cwRot + 1) % 4);
+  } else if (event.button === 2) {
+    // Right click
+    widgetGrid[y][x] = new Straight(y, x, cwRot);
+  }
+}
+
+function mouseClicked(event) {
+  handleMouseClick(event);
 }
 
 function mouseMoved() {
